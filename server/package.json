@@ -15,6 +15,7 @@
     "build:full": "npm run build:frontend && npm run copy:frontend && npm run build && npm run build:exe"
   },
   "pkg": {
+    "icon": "../build/icon.ico",
     "assets": [
       "dist/**/*",
       "client-dist/**/*",

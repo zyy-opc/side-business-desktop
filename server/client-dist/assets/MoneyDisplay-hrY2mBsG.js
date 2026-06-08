@@ -1,1 +1,0 @@
-import{bs as i}from"./index-Bi5xdz6f.js";const a=({value:m,precision:t=2})=>{const s=new Intl.NumberFormat("zh-CN",{style:"decimal",minimumFractionDigits:t,maximumFractionDigits:t}).format(m);return i.jsxs("span",{children:["￥",s]})};export{a as M};

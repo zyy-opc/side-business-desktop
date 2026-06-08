@@ -1,6 +1,6 @@
 ; ============================================================================
 ; JieGao Business Manager - NSIS Installer
-; Default install: D:\, block C:\
+; Default install: D:\
 ; ============================================================================
 
 Unicode true
@@ -24,14 +24,6 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "English"
 
-; Block C: drive
-Function .onVerifyInstDir
-  StrCpy $0 $INSTDIR 2
-  ${If} $0 == "C:"
-    MessageBox MB_ICONSTOP|MB_OK "Installation to C: drive is not allowed. Please select D: drive or another non-system drive."
-    Abort
-  ${EndIf}
-FunctionEnd
 
 Section "Install"
   SetOutPath "$INSTDIR"

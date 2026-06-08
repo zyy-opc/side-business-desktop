@@ -48,14 +48,29 @@ export function ensureDataDirs(): void {
 
 /**
  * 获取打包资源路径
- * pkg 打包环境下 __dirname 指向快照内，开发环境指向实际文件系统
+ * pkg 打包环境下 __dirname 指向快照内的 dist/ 目录，
+ * 而 pkg.assets 资源挂载在快照根目录（与 dist/ 平级），
+ * 因此需要向上一级再拼接 relativePath。
+ * 开发环境使用 process.cwd()。
  */
 export function getAssetPath(relativePath: string): string {
   // @ts-ignore — process.pkg 在 pkg 运行时存在
   if (process.pkg) {
-    return path.join(__dirname, relativePath);
+    const base = path.dirname(__dirname);
+    const result = path.join(base, relativePath);
+    const envInfo = `pkg (__dirname=${__dirname}, base=${base}, result=${result})`;
+    try {
+      const fs = require('fs');
+      const exists = fs.existsSync(result);
+      console.log(`[paths] getAssetPath("${relativePath}") ${envInfo} exists=${exists}`);
+    } catch {
+      console.log(`[paths] getAssetPath("${relativePath}") ${envInfo}`);
+    }
+    return result;
   }
-  return path.join(process.cwd(), relativePath);
+  const result = path.join(process.cwd(), relativePath);
+  console.log(`[paths] getAssetPath("${relativePath}") dev (cwd=${process.cwd()}, result=${result})`);
+  return result;
 }
 
 /** 获取迁移 SQL 目录 */
