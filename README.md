@@ -1,3 +1,3 @@
-# side-business-desktop
+# 接稿业务管理系统（桌面版）
 
-侧方运营管理系统 - 桌面版 (SQLite + pkg + NSIS)
+桌面版 (SQLite + pkg + NSIS)

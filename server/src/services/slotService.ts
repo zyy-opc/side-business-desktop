@@ -112,7 +112,7 @@ export async function updateSlot(id: number, data: SlotUpdate): Promise<Slot | n
 
 export async function publishSlot(id: number): Promise<Slot> {
   const existing = await getSlot(id);
-  if (!existing) throw new Error('稿位不存在');
+  if (!existing) throw new Error('橱窗不存在');
   if (existing.status !== 'pending_publish') {
     throw new Error(`当前状态 ${existing.status} 不允许上架`);
   }
@@ -122,7 +122,7 @@ export async function publishSlot(id: number): Promise<Slot> {
 
 export async function offShelfSlot(id: number, reason: string): Promise<Slot> {
   const existing = await getSlot(id);
-  if (!existing) throw new Error('稿位不存在');
+  if (!existing) throw new Error('橱窗不存在');
   if (existing.status !== 'on_sale') {
     throw new Error(`当前状态 ${existing.status} 不允许下架`);
   }
@@ -135,7 +135,7 @@ export async function offShelfSlot(id: number, reason: string): Promise<Slot> {
 
 export async function relistSlot(id: number): Promise<Slot> {
   const existing = await getSlot(id);
-  if (!existing) throw new Error('稿位不存在');
+  if (!existing) throw new Error('橱窗不存在');
   if (existing.status !== 'off_shelf') {
     throw new Error(`当前状态 ${existing.status} 不允许重新上架`);
   }

@@ -25,7 +25,8 @@ import progressOrderRoutes from './routes/progressOrder.js';
 import deliveryRoutes from './routes/delivery.js';
 import paymentRoutes from './routes/payment.js';
 import refundReasonRoutes from './routes/refundReason.js';
-import analyticsRoutes from './analytics/router.js';
+import comfortMessageRoutes from './routes/comfortMessage.js';
+import analyticsStub from './analytics/router.js';
 
 const app = express();
 const DEFAULT_PORT = 3000;
@@ -35,7 +36,7 @@ const DEFAULT_PORT = 3000;
 // ============================================================================
 
 async function startup(): Promise<void> {
-  console.log('[server] side-business-desktop v1.0.0 starting...');
+  console.log('[server] 接稿业务管理系统 v1.0.0 starting...');
 
   // 1. 确保用户数据目录存在
   ensureDataDirs();
@@ -68,25 +69,7 @@ async function startup(): Promise<void> {
     process.exit(1);
   }
 
-  // 4. 注册 node-cron 定时任务 (每日 02:00 ETL)
-  try {
-    const cron = await import('node-cron');
-    cron.default.schedule('0 2 * * *', async () => {
-      console.log('[cron] Daily ETL starting...');
-      try {
-        const { executeDailyETL } = await import('./analytics/service.js');
-        await executeDailyETL();
-        console.log('[cron] Daily ETL completed');
-      } catch (err) {
-        console.error('[cron] Daily ETL failed:', err);
-      }
-    });
-    console.log('[server] Cron job registered (daily 02:00 ETL)');
-  } catch (err) {
-    console.warn('[server] node-cron not available, skipping scheduled ETL');
-  }
-
-  // 5. 配置 Express
+  // 4. 配置 Express
   app.use(cors());
   app.use(express.json({ limit: '10mb' }));
 
@@ -127,18 +110,19 @@ async function startup(): Promise<void> {
   app.use('/api/v1/deliveries', deliveryRoutes);
   app.use('/api/v1/payments', paymentRoutes);
   app.use('/api/v1/refund-reasons', refundReasonRoutes);
-  app.use('/api/v1/analytics', analyticsRoutes);
+  app.use('/api/v1/comfort-messages', comfortMessageRoutes);
+  app.use('/api/v1/analytics', analyticsStub);
 
-  // 6. 端口检测与启动
+  // 5. 端口检测与启动
   const port = await findAvailablePort(DEFAULT_PORT);
   app.listen(port, () => {
     console.log(`[server] Running on http://localhost:${port}`);
-    console.log('[server] 12 modules loaded: platforms, customers, slots, slot-types, orders, progress-logs, progress-orders, deliveries, payments, refund-reasons, calendar, analytics');
+    console.log('[server] 12 modules loaded: platforms, customers, slots, slot-types, orders, progress-logs, progress-orders, deliveries, payments, refund-reasons, calendar, comfort-messages');
 
-    // 7. 打开浏览器
+    // 6. 打开浏览器
     openBrowser(port);
 
-    // 8. 后台预热 OCR Worker (不阻塞启动)
+    // 7. 后台预热 OCR Worker (不阻塞启动)
     warmupWorker();
   });
 }

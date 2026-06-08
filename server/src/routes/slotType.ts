@@ -48,7 +48,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const existing = await svc.getSlotType(id);
     if (!existing) return notFound(res);
     const refs = await checkReferences(id, [{ table: 'slot', column: 'slot_type_id' }]);
-    if (sumReferences(refs) > 0) return fail(res, `该稿位类型被 ${refs.slot || 0} 个稿位引用，无法删除`);
+    if (sumReferences(refs) > 0) return fail(res, `该橱窗类型被 ${refs.slot || 0} 个橱窗引用，无法删除`);
     await svc.deleteSlotType(id);
     success(res, null, '已删除');
   } catch (err) { serverError(res, err); }

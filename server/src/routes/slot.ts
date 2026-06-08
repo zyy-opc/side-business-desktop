@@ -101,7 +101,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
     if (!existing) return notFound(res);
     const refs = await checkReferences(id, [{ table: 'order_info', column: 'slot_id' }]);
     if (sumReferences(refs) > 0) {
-      return fail(res, `该稿位被 ${refs.order_info || 0} 条订单引用，无法删除，请使用下架功能`);
+      return fail(res, `该橱窗被 ${refs.order_info || 0} 条订单引用，无法删除，请使用下架功能`);
     }
     await svc.deleteSlot(id);
     success(res, null, '已删除');

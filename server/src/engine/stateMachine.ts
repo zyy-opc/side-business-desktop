@@ -34,7 +34,7 @@ async function handleAccept(conn: any, orderId: number, order: OrderInfo): Promi
     await conn.query('UPDATE slot SET accepted_quantity = accepted_quantity + 1 WHERE id = ?', [slotId]);
   }
 
-  await conn.query('UPDATE customer SET total_orders = total_orders + 1 WHERE id = ?', [order.customer_id]);
+  await conn.query("UPDATE customer SET total_orders = total_orders + 1, first_order_date = COALESCE(first_order_date, date('now','localtime')) WHERE id = ?", [order.customer_id]);
 
   let estimatedDeliveryTime: string | null = null;
   if (slotId) {

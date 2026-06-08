@@ -72,15 +72,15 @@ export async function createOrder(data: OrderCreate): Promise<OrderInfo> {
     const commissionAmountCents = Math.round(orderAmountCents * commissionRate / 10000);
     const netIncomeCents = orderAmountCents - commissionAmountCents;
 
-    // 4. 校验稿位状态与容量
+    // 4. 校验橱窗状态与容量
     if (data.slot_id) {
       const [slots] = await conn.query(
         'SELECT status, accepted_quantity, max_quantity FROM slot WHERE id = ?', [data.slot_id]
       );
-      if (slots.length === 0) throw new Error('稿位不存在');
+      if (slots.length === 0) throw new Error('橱窗不存在');
       const slot = slots[0];
-      if (slot.status !== 'on_sale') throw new Error('稿位已下架，无法创建订单');
-      if (slot.accepted_quantity >= slot.max_quantity) throw new Error('稿位已满额，无法创建订单');
+      if (slot.status !== 'on_sale') throw new Error('橱窗已下架，无法创建订单');
+      if (slot.accepted_quantity >= slot.max_quantity) throw new Error('橱窗已满额，无法创建订单');
     }
 
     // 5. 生成 doc_no
@@ -97,6 +97,8 @@ export async function createOrder(data: OrderCreate): Promise<OrderInfo> {
         data.estimated_delivery_time ?? null, data.requirement_desc ?? null, data.remark ?? null]
     );
 
+    // 下单即更新客户最近下单日期
+    await conn.query("UPDATE customer SET last_order_date = date('now','localtime') WHERE id = ?", [data.customer_id]);
     await conn.commit();
 
     const [rows] = await pool.query('SELECT * FROM order_info WHERE id = ?', [(result as any).insertId]);
@@ -161,11 +163,11 @@ export async function updateOrder(id: number, data: OrderUpdate): Promise<OrderI
           'SELECT accepted_quantity, max_quantity FROM slot WHERE id = ?', [newSlotId]
         );
         if (slots.length === 0) {
-          throw Object.assign(new Error('稿位不存在'), { status: 400 });
+          throw Object.assign(new Error('橱窗不存在'), { status: 400 });
         }
         const slot = slots[0];
         if (slot.accepted_quantity >= slot.max_quantity) {
-          throw Object.assign(new Error('该稿位已满'), { status: 400 });
+          throw Object.assign(new Error('该橱窗已满'), { status: 400 });
         }
       }
 

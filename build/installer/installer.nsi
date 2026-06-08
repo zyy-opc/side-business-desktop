@@ -5,7 +5,7 @@
 ; ============================================================================
 
 ; --- 基本配置 ---
-!define PRODUCT_NAME "侧方运营管理系统"
+!define PRODUCT_NAME "接稿业务管理系统"
 !define PRODUCT_NAME_EN "side-business-system"
 !define PRODUCT_VERSION "1.0.0"
 !define PRODUCT_PUBLISHER "side-business-team"

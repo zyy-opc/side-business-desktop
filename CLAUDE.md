@@ -1,6 +1,6 @@
-# side-business-desktop
+# 接稿业务管理系统（桌面版）
 
-侧方运营管理系统 — 桌面版。基于 SQLite + pkg + NSIS，单文件 EXE 发布。
+基于 SQLite + pkg + NSIS，单文件 EXE 发布。
 
 ## 环境
 

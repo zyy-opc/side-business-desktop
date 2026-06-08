@@ -1,5 +1,5 @@
 // ============================================================================
-// side-business-desktop — 类型定义 (SQLite 适配版)
+// 接稿业务管理系统 — 类型定义 (SQLite 适配版)
 // 金额字段: INTEGER(分) 存储，应用层通过 centsToYuan/yuanToCents 转换
 // ============================================================================
 
@@ -458,5 +458,5 @@ export interface StateTransitionResult {
 
 export const TERMINAL_STATUSES: OrderStatus[] = ['settled', 'rejected', 'cancelled'];
 export const NON_TERMINAL_STATUSES: OrderStatus[] = ['pending', 'queued', 'in_progress', 'delivered', 'revising', 'overdue'];
-export const PROGRESS_ALLOWED_ORDER_STATUSES: OrderStatus[] = ['queued', 'in_progress', 'overdue', 'revising'];
+export const PROGRESS_ALLOWED_ORDER_STATUSES: OrderStatus[] = ['queued', 'in_progress', 'overdue', 'revising', 'delivered'];
 export const DELIVERY_ALLOWED_ORDER_STATUSES: OrderStatus[] = ['delivered', 'revising'];
