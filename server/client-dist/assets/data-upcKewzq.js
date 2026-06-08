@@ -1,0 +1,1 @@
+const o={commission:{color:"#1677FF",text:"约稿平台"},social:{color:"#52C41A",text:"社交平台"},submission:{color:"#722ED1",text:"投稿平台"}},t={reject:{color:"#FF4D4F",text:"拒单"},cancel:{color:"#8C8C8C",text:"取消"},refund:{color:"#FA8C16",text:"退款"},all:{color:"#1677FF",text:"通用"}};export{t as A,o as P};

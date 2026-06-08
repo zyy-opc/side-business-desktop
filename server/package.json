@@ -1,0 +1,50 @@
+{
+  "name": "side-business-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "侧方运营管理系统 - 桌面版 (SQLite + pkg + NSIS)",
+  "main": "dist/entry.js",
+  "bin": "dist/entry.js",
+  "scripts": {
+    "dev": "tsx src/entry.ts",
+    "build": "tsc",
+    "start": "node dist/entry.js",
+    "build:exe": "npm run build && pkg . --targets node18-win-x64 --output build/payload/side-business.exe",
+    "build:frontend": "cd ../client && npx vite build",
+    "copy:frontend": "node -e \"const fs=require('fs');const p=require('path');function cp(s,d){if(!fs.existsSync(s))return;fs.mkdirSync(d,{recursive:true});for(const e of fs.readdirSync(s)){const a=p.join(s,e),b=p.join(d,e);fs.statSync(a).isDirectory()?cp(a,b):fs.copyFileSync(a,b)}}cp('../client/dist','client-dist');console.log('Frontend copied')\"",
+    "build:full": "npm run build:frontend && npm run copy:frontend && npm run build && npm run build:exe"
+  },
+  "pkg": {
+    "assets": [
+      "dist/**/*",
+      "client-dist/**/*",
+      "node_modules/sql.js/dist/sql-wasm.wasm",
+      "node_modules/tesseract.js/dist/**/*",
+      "node_modules/tesseract.js-core/tesseract-core-*.wasm",
+      "node_modules/tesseract.js-core/tesseract-core-simd-*.wasm",
+      "tessdata/**/*",
+      "migrations/**/*.sql"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ],
+    "outputPath": "build"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "multer": "^2.1.1",
+    "node-cron": "^3.0.0",
+    "sql.js": "^1.10.0",
+    "tesseract.js": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^20.14.0",
+    "pkg": "^5.8.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3"
+  }
+}
