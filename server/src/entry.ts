@@ -11,6 +11,7 @@ import { exec } from 'child_process';
 import { initDatabase, closeDatabase, saveDatabase } from './config/database.js';
 import { ensureDataDirs, getAssetPath, getDataPath } from './config/paths.js';
 import { runMigrations, backupBeforeMigration } from './services/migrationService.js';
+import { checkLicense } from './services/licenseService.js';
 import { warmupWorker, terminateWorker } from './services/ocrService.js';
 
 // 路由导入
@@ -26,6 +27,7 @@ import deliveryRoutes from './routes/delivery.js';
 import paymentRoutes from './routes/payment.js';
 import refundReasonRoutes from './routes/refundReason.js';
 import comfortMessageRoutes from './routes/comfortMessage.js';
+import licenseRoutes from './routes/license.js';
 import analyticsStub from './analytics/router.js';
 
 const app = express();
@@ -69,6 +71,18 @@ async function startup(): Promise<void> {
     process.exit(1);
   }
 
+  // ==========================================================================
+  // 3.5 授权检查
+  // ==========================================================================
+  const initLicenseStatus = await checkLicense();
+  if (initLicenseStatus.activated && !initLicenseStatus.expired) {
+    console.log(`[server] License active, ${initLicenseStatus.daysLeft} days remaining`);
+  } else if (initLicenseStatus.activated && initLicenseStatus.expired) {
+    console.warn('[server] License expired!');
+  } else {
+    console.warn('[server] Not activated — only /api/v1/license/activate is available');
+  }
+
   // 4. 配置 Express
   app.use(cors());
   app.use(express.json({ limit: '10mb' }));
@@ -98,7 +112,22 @@ async function startup(): Promise<void> {
     setTimeout(() => gracefulShutdown(), 500);
   });
 
-  // API routes
+  // API routes — license routes are always accessible (no guard)
+  app.use('/api/v1/license', licenseRoutes);
+
+  // License guard: block all other /api/v1/* routes when not activated
+  app.use('/api/v1', async (req, res, next) => {
+    // Allow license endpoints even when not activated
+    if (req.path === '/license/activate' || req.path === '/license/status') return next();
+    const status = await checkLicense();
+    if (status.activated && !status.expired) return next();
+    res.status(403).json({
+      code: 40310,
+      message: '系统未激活，请先激活后再使用',
+      data: null,
+    });
+  });
+
   app.use('/api/v1/platforms', platformRoutes);
   app.use('/api/v1/customers', customerRoutes);
   app.use('/api/v1/slots', slotRoutes);

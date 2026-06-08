@@ -460,3 +460,26 @@ export const TERMINAL_STATUSES: OrderStatus[] = ['settled', 'rejected', 'cancell
 export const NON_TERMINAL_STATUSES: OrderStatus[] = ['pending', 'queued', 'in_progress', 'delivered', 'revising', 'overdue'];
 export const PROGRESS_ALLOWED_ORDER_STATUSES: OrderStatus[] = ['queued', 'in_progress', 'overdue', 'revising', 'delivered'];
 export const DELIVERY_ALLOWED_ORDER_STATUSES: OrderStatus[] = ['delivered', 'revising'];
+
+// ---- 授权 ----
+
+export interface LicenseRecord {
+  id: number;
+  code_hash: string;
+  activated_at: string;
+  expires_at: string;
+  created_at: string;
+}
+
+export interface LicenseStatus {
+  activated: boolean;
+  expired: boolean;
+  expiresAt: string | null;
+  daysLeft: number;
+}
+
+export interface ActivateCodeResult {
+  valid: boolean;
+  message: string;
+  days?: number;
+}
