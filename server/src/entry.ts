@@ -28,6 +28,7 @@ import paymentRoutes from './routes/payment.js';
 import refundReasonRoutes from './routes/refundReason.js';
 import comfortMessageRoutes from './routes/comfortMessage.js';
 import licenseRoutes from './routes/license.js';
+import updateRoutes from './routes/update.js';
 import analyticsStub from './analytics/router.js';
 
 const app = express();
@@ -112,8 +113,9 @@ async function startup(): Promise<void> {
     setTimeout(() => gracefulShutdown(), 500);
   });
 
-  // API routes — license routes are always accessible (no guard)
+  // API routes — no guard: license & update are always accessible
   app.use('/api/v1/license', licenseRoutes);
+  app.use('/api/v1/update', updateRoutes);
 
   // License guard: block all other /api/v1/* routes when not activated
   app.use('/api/v1', async (req, res, next) => {

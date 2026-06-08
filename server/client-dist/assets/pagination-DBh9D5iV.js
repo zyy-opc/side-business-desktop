@@ -1,0 +1,1 @@
+import{bI as i}from"./index-Bi5xdz6f.js";function l(r){const{current:a,pageSize:t,total:o,showSizeChanger:n=!0,pageSizeOptions:c=["10","20","50"]}=r;return{current:a,pageSize:t,total:o,showSizeChanger:n,pageSizeOptions:c,showTotal:e=>i.createElement("span",{style:{color:"var(--ant-color-text-tertiary, #8B9FAD)"}},`共 ${Math.ceil(e/t)} 页，共 ${e} 条`)}}export{l as c};
