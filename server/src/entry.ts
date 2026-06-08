@@ -8,7 +8,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { exec } from 'child_process';
-import { initDatabase, closeDatabase, saveDatabase } from './config/database.js';
+import { initDatabase, closeDatabase, saveDatabase, getDatabase } from './config/database.js';
 import { ensureDataDirs, getAssetPath, getDataPath, getLogPath } from './config/paths.js';
 import { runMigrations, backupBeforeMigration } from './services/migrationService.js';
 import { checkLicense } from './services/licenseService.js';
@@ -110,7 +110,17 @@ async function startup(): Promise<void> {
     throw err;
   }
 
-  // 3.5 授权检查
+  // 3.5 确保 license 表存在
+  const database = getDatabase();
+  database.run(`CREATE TABLE IF NOT EXISTS license (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code_hash TEXT NOT NULL,
+    activated_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+  )`);
+
+  // 3.6 授权检查
   try {
     const initLicenseStatus = await checkLicense();
     if (initLicenseStatus.activated && !initLicenseStatus.expired) {
@@ -129,23 +139,6 @@ async function startup(): Promise<void> {
   try {
     app.use(cors());
     app.use(express.json({ limit: '10mb' }));
-
-    // 静态文件服务 — 前端 build 产物
-    const clientDist = getAssetPath('client-dist');
-    startupLog(`clientDist path: ${clientDist}, exists: ${fs.existsSync(clientDist)}`);
-    if (fs.existsSync(clientDist)) {
-      app.use(express.static(clientDist));
-      app.get('*', (_req, res) => {
-        const indexPath = path.join(clientDist, 'index.html');
-        if (fs.existsSync(indexPath)) {
-          res.sendFile(indexPath);
-        } else {
-          res.status(404).json({ code: 404, message: 'Frontend not found' });
-        }
-      });
-    } else {
-      startupLog('WARNING: client-dist not found, frontend will not be served');
-    }
 
     // Health check
     app.get('/api/health', (_req, res) => {
@@ -188,6 +181,23 @@ async function startup(): Promise<void> {
     app.use('/api/v1/refund-reasons', refundReasonRoutes);
     app.use('/api/v1/comfort-messages', comfortMessageRoutes);
     app.use('/api/v1/analytics', analyticsStub);
+
+    // 静态文件服务 — 前端 build 产物（在API路由之后，避免拦截）
+    const clientDist = getAssetPath('client-dist');
+    startupLog(`clientDist path: ${clientDist}, exists: ${fs.existsSync(clientDist)}`);
+    if (fs.existsSync(clientDist)) {
+      app.use(express.static(clientDist));
+      app.get('*', (_req, res) => {
+        const indexPath = path.join(clientDist, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          res.status(404).json({ code: 404, message: 'Frontend not found' });
+        }
+      });
+    } else {
+      startupLog('WARNING: client-dist not found, frontend will not be served');
+    }
 
     startupLog('Express routes: OK');
   } catch (err: any) {
@@ -304,7 +314,13 @@ process.on('SIGTERM', gracefulShutdown);
 
 // 全局异常处理 — 写入日志文件 + stderr
 process.on('uncaughtException', (err) => {
-  startupLog(`UNCAUGHT EXCEPTION: ${err.message}\n${err.stack || ''}`);
+  const msg = err.message || String(err);
+  // OCR worker 错误不视为致命
+  if (msg.includes('traineddata') || msg.includes('tesseract')) {
+    startupLog(`OCR worker error (non-fatal): ${msg}`);
+    return;
+  }
+  startupLog(`UNCAUGHT EXCEPTION: ${msg}\n${err.stack || ''}`);
   console.error('[server] UNCAUGHT EXCEPTION:', err);
 });
 process.on('unhandledRejection', (reason) => {

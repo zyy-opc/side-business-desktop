@@ -56,21 +56,13 @@ export function ensureDataDirs(): void {
 export function getAssetPath(relativePath: string): string {
   // @ts-ignore — process.pkg 在 pkg 运行时存在
   if (process.pkg) {
-    const base = path.dirname(__dirname);
-    const result = path.join(base, relativePath);
-    const envInfo = `pkg (__dirname=${__dirname}, base=${base}, result=${result})`;
-    try {
-      const fs = require('fs');
-      const exists = fs.existsSync(result);
-      console.log(`[paths] getAssetPath("${relativePath}") ${envInfo} exists=${exists}`);
-    } catch {
-      console.log(`[paths] getAssetPath("${relativePath}") ${envInfo}`);
-    }
+    // pkg snapshot: __dirname=/snapshot/server/dist/config/
+    // package root = /snapshot/server/ (up 2 from dist/config/)
+    const pkgRoot = path.resolve(__dirname, '..', '..');
+    const result = path.join(pkgRoot, relativePath);
     return result;
   }
-  const result = path.join(process.cwd(), relativePath);
-  console.log(`[paths] getAssetPath("${relativePath}") dev (cwd=${process.cwd()}, result=${result})`);
-  return result;
+  return path.join(process.cwd(), relativePath);
 }
 
 /** 获取迁移 SQL 目录 */

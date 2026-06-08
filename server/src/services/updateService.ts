@@ -5,11 +5,7 @@
 
 import https from 'https';
 import { readFileSync } from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { resolve } from 'path';
 
 const VERSION_URL = 'https://raw.githubusercontent.com/zyy-opc/side-business-desktop/master/version.json';
 
