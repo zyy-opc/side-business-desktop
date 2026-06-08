@@ -225,7 +225,7 @@ export interface ActivateCodeResult {
 /**
  * 激活授权码：本地 SHA256 对比 GitHub 哈希表，通过后写入 license 表
  */
-export async function activateCode(code: string): Promise<ActivateCodeResult> {
+export async function activateCode(code: string, serverUrl?: string): Promise<ActivateCodeResult> {
   const trimmed = code.trim().toUpperCase();
 
   // 本地哈希验证
@@ -257,6 +257,26 @@ export async function activateCode(code: string): Promise<ActivateCodeResult> {
        VALUES (?, ?, ?)`,
       [codeHash, activatedAt, expiresAt]
     );
+
+    // 回调服务器标记激活码已使用（非阻塞）
+    if (serverUrl) {
+      const machineId = getMachineId();
+      const http = require('http');
+      const body = JSON.stringify({ code: trimmed, machine_id: machineId });
+      const url = new URL(`${serverUrl}/api/v1/license/verify`);
+      const options = {
+        hostname: url.hostname,
+        port: url.port || 80,
+        path: url.pathname,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+        timeout: 5000,
+      };
+      const req = http.request(options);
+      req.on('error', () => { /* 回调失败不阻断激活 */ });
+      req.write(body);
+      req.end();
+    }
 
     return {
       valid: true,

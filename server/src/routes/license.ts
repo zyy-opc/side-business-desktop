@@ -14,15 +14,15 @@ router.get('/status', async (_req: Request, res: Response) => {
   }
 });
 
-/** POST /api/v1/license/activate — 接收 { code }，本地 SHA256 对比 GitHub 哈希表激活 */
+/** POST /api/v1/license/activate — 接收 { code, serverUrl }，本地验证后回调服务器标记已使用 */
 router.post('/activate', async (req: Request, res: Response) => {
   try {
-    const { code } = req.body;
+    const { code, serverUrl } = req.body;
     if (!code || typeof code !== 'string' || code.trim().length === 0) {
       return fail(res, '请输入激活码');
     }
 
-    const result = await activateCode(code.trim());
+    const result = await activateCode(code.trim(), serverUrl || '');
 
     if (!result.valid) {
       return fail(res, result.message);
